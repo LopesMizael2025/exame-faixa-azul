@@ -125,6 +125,39 @@ textarea { min-height: 90px; resize: vertical; }
 #copyArea { width: 100%; min-height: 140px; font-size: 13px; }
 .foot { color: var(--muted); font-size: 13px; }
 @media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+
+/* PDF: folha A4 clara, só a nota marcada aparece em cada técnica */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  :root:root:root {
+    --bg: #ffffff; --surface: #ffffff; --fg: #141a26; --muted: #5b6577; --line: #c9d0dc;
+    --belt: #1d4fb8; --belt-ink: #ffffff; --belt-soft: #dfe8fb;
+    --ok: #18804a; --ok-soft: #dcf2e5; --half: #a86a00; --half-soft: #fbedd0;
+    --bad: #c0332b; --bad-soft: #f8dedc; --stripe: #141a26; color-scheme: light;
+  }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; font-size: 12px; }
+  body::before, .belt-bar, .actions, #copyArea, .foot { display: none !important; }
+  .wrap { max-width: none; padding-inline: 0; }
+  .belt { border-radius: 8px; }
+  .belt .wrap { padding: 12px 14px; }
+  h1 { font-size: 30px; }
+  .score { position: static; border: 1px solid var(--line); border-radius: 8px; margin-top: 8px; }
+  .score .wrap { padding: 8px 14px; }
+  .pct { font-size: 30px; }
+  main.wrap { padding-block: 12px 0; gap: 12px; }
+  input[type=text], input[type=date], select, textarea { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 2px 0; font-size: 13px; }
+  ::placeholder { color: transparent; }
+  textarea { resize: none; min-height: 0; }
+  section.blk { border-radius: 8px; }
+  .blk > header { padding: 6px 12px; break-after: avoid; }
+  .blk h2 { font-size: 16px; }
+  .item { padding: 6px 12px; gap: 4px; break-inside: avoid; }
+  .item-h h3 { font-size: 13px; }
+  .marks button { width: 28px; height: 24px; font-size: 15px; }
+  .marks button:not([aria-pressed=true]) { display: none; }
+  .marks:not(:has([aria-pressed=true]))::after { content: "—"; color: var(--muted); width: 28px; text-align: center; }
+}
 </style>
 </head>
 <body>
@@ -142,7 +175,7 @@ textarea { min-height: 90px; resize: vertical; }
     <div class="pct" id="pct">0%</div>
     <div class="meter">
       <div class="track"><div class="fill" id="fill"></div><div class="cut" title="Corte de 80%"></div></div>
-      <small id="meterTxt">0 de 58 pontos · 58 itens pendentes</small>
+      <small id="meterTxt">0 de 73 pontos · 73 itens pendentes</small>
     </div>
     <span class="pill" id="status">Em andamento</span>
   </div>
@@ -159,7 +192,7 @@ textarea { min-height: 90px; resize: vertical; }
     <span><b style="color:var(--ok)">✓</b> correto = 1 pt</span>
     <span><b style="color:var(--half)">½</b> com ajustes = 0,5 pt</span>
     <span><b style="color:var(--bad)">✗</b> não executou = 0 pt</span>
-    <span>Aprovação: 80% (46,4 de 58 pontos). Avalie a técnica, não a velocidade.</span>
+    <span>Aprovação: 80% (58,4 de 73 pontos). Avalie a técnica, não a velocidade.</span>
   </div>
 
   <div id="sections"></div>
@@ -172,7 +205,8 @@ textarea { min-height: 90px; resize: vertical; }
   </section>
 
   <div class="actions">
-    <button class="btn" id="copyBtn" type="button">Copiar resultado</button>
+    <button class="btn" id="pdfBtn" type="button">Exportar PDF</button>
+    <button class="btn ghost" id="copyBtn" type="button">Copiar resultado</button>
     <button class="btn ghost" id="newBtn" type="button">Novo exame</button>
     <span class="confirm" id="confirmBox" hidden>
       Apagar este exame?
@@ -211,8 +245,14 @@ const SECTIONS = [
     { id: "pass-g", label: "Passagens de guarda (situações diferentes)", count: 5, named: true },
     { id: "dom-mg", label: "Domínio de meia guarda", count: 1 },
     { id: "pass-mg", label: "Passagens de meia guarda", count: 3, named: true },
-    { id: "abert", label: "Aberturas de guarda fechada", count: 2, named: true },
-    { id: "rasp", label: "Raspagens", count: 3, named: true, guard: true, req: "escolher entre as guardas" } ] },
+    { id: "abert", label: "Aberturas de guarda fechada", count: 2, named: true } ] },
+  { id: "rasp", title: "Raspagens", items: [
+    { id: "rasp-fechada", label: "Da guarda fechada", count: 3, named: true },
+    { id: "rasp-meia", label: "Da meia guarda", count: 3, named: true },
+    { id: "rasp-aranha", label: "Da aranha", count: 3, named: true },
+    { id: "rasp-dlr", label: "Da De La Riva", count: 3, named: true },
+    { id: "rasp-gancho", label: "Do gancho", count: 3, named: true },
+    { id: "rasp-laco", label: "Do laço", count: 3, named: true } ] },
   { id: "def", title: "Defesas de posição", items: [
     { id: "def-mont", label: "Defesas da montada", count: 2, named: true },
     { id: "def-cost", label: "Defesas das costas", count: 2, named: true },
@@ -342,6 +382,15 @@ document.getElementById("copyBtn").onclick = () => {
     navigator.clipboard.writeText(txt).then(() => { toast.textContent = "Resultado copiado"; toast.hidden = false; setTimeout(() => toast.hidden = true, 2500); }, fallback);
   } catch (e) { fallback(); }
 };
+
+// O título vira o nome sugerido do arquivo PDF; a observação cresce para não ser cortada na folha
+const pageTitle = document.title;
+window.addEventListener("beforeprint", () => {
+  document.title = "Exame Faixa Azul" + (state.aluno ? " - " + state.aluno : "");
+  const obs = document.getElementById("obs"); obs.style.height = obs.scrollHeight + "px";
+});
+window.addEventListener("afterprint", () => { document.title = pageTitle; document.getElementById("obs").style.height = ""; });
+document.getElementById("pdfBtn").onclick = () => window.print();
 
 render();
 </script>
