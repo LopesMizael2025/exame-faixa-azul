@@ -11,39 +11,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
 <style>
 /* Layout: ficha de tatame em coluna única, placar fixo no topo, seções = blocos do exame */
+/* Paleta única (escura, faixa azul clara) em qualquer aparelho; só o PDF usa folha clara */
 :root {
-  --bg: #eef1f6;
-  --surface: #ffffff;
-  --fg: #141a26;
-  --muted: #5b6577;
-  --line: #d5dbe6;
-  --belt: #1d4fb8;
-  --belt-ink: #ffffff;
-  --belt-soft: #dfe8fb;
-  --ok: #18804a;
-  --ok-soft: #dcf2e5;
-  --half: #a86a00;
-  --half-soft: #fbedd0;
-  --bad: #c0332b;
-  --bad-soft: #f8dedc;
-  --stripe: #141a26;
-  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
-  --f-body: "Barlow", system-ui, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d121c; --surface: #161d2b; --fg: #e8edf6; --muted: #98a3b8; --line: #2a3447;
-    --belt: #4f84f0; --belt-ink: #0b1220; --belt-soft: #1b2b4d;
-    --ok: #4cc685; --ok-soft: #133524; --half: #f0b44a; --half-soft: #3a2c10;
-    --bad: #f0746b; --bad-soft: #3d1a18; --stripe: #000000;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
   --bg: #0d121c; --surface: #161d2b; --fg: #e8edf6; --muted: #98a3b8; --line: #2a3447;
   --belt: #4f84f0; --belt-ink: #0b1220; --belt-soft: #1b2b4d;
   --ok: #4cc685; --ok-soft: #133524; --half: #f0b44a; --half-soft: #3a2c10;
   --bad: #f0746b; --bad-soft: #3d1a18; --stripe: #000000;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Barlow", system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
