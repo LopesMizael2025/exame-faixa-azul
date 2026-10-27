@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Exame Faixa Azul</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: ficha de tatame em coluna única, placar fixo no topo, seções = blocos do exame */
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --fg: #141a26;
+  --muted: #5b6577;
+  --line: #d5dbe6;
+  --belt: #1d4fb8;
+  --belt-ink: #ffffff;
+  --belt-soft: #dfe8fb;
+  --ok: #18804a;
+  --ok-soft: #dcf2e5;
+  --half: #a86a00;
+  --half-soft: #fbedd0;
+  --bad: #c0332b;
+  --bad-soft: #f8dedc;
+  --stripe: #141a26;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Barlow", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d121c; --surface: #161d2b; --fg: #e8edf6; --muted: #98a3b8; --line: #2a3447;
+    --belt: #4f84f0; --belt-ink: #0b1220; --belt-soft: #1b2b4d;
+    --ok: #4cc685; --ok-soft: #133524; --half: #f0b44a; --half-soft: #3a2c10;
+    --bad: #f0746b; --bad-soft: #3d1a18; --stripe: #000000;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d121c; --surface: #161d2b; --fg: #e8edf6; --muted: #98a3b8; --line: #2a3447;
+  --belt: #4f84f0; --belt-ink: #0b1220; --belt-soft: #1b2b4d;
+  --ok: #4cc685; --ok-soft: #133524; --half: #f0b44a; --half-soft: #3a2c10;
+  --bad: #f0746b; --bad-soft: #3d1a18; --stripe: #000000;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--belt); }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Faixa (header) */
+.belt { background: var(--belt); color: var(--belt-ink); }
+.belt .wrap { padding-block: 22px 18px; display: grid; gap: 4px; }
+.eyebrow { font-family: var(--f-display); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; font-size: 13px; opacity: .85; }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(34px, 8vw, 52px); line-height: .95; margin: 0; text-transform: uppercase; letter-spacing: .01em; text-wrap: balance; }
+.belt-bar { height: 14px; background: var(--belt); position: relative; }
+.belt-bar::after { content: ""; position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); top: 0; bottom: 0; width: 70px; background: var(--stripe); }
+
+/* Placar fixo */
+.score { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.score .wrap { padding-block: 10px; display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+.pct { font-family: var(--f-display); font-weight: 800; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 3.2ch; }
+.meter { display: grid; gap: 5px; min-width: 0; }
+.track { height: 10px; background: var(--belt-soft); border-radius: 5px; position: relative; overflow: hidden; }
+.fill { position: absolute; inset: 0 auto 0 0; background: var(--belt); width: 0; transition: width .25s; }
+.cut { position: absolute; top: -3px; bottom: -3px; left: 80%; width: 2px; background: var(--fg); }
+.meter small { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.pill { font-family: var(--f-display); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 14px; padding: 6px 11px; border-radius: 999px; white-space: nowrap; background: var(--belt-soft); color: var(--belt); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+
+main.wrap { padding-block: 20px 60px; display: grid; gap: 22px; }
+
+/* Ficha do aluno */
+.ficha { display: grid; grid-template-columns: 2fr 1.4fr 1fr; gap: 10px; }
+@media (max-width: 560px) { .ficha { grid-template-columns: 1fr 1fr; } .ficha .full { grid-column: 1 / -1; } }
+label.f { display: grid; gap: 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; min-width: 0; }
+input[type=text], input[type=date], select, textarea {
+  font: inherit; font-size: 15px; color: var(--fg); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0; text-transform: none; letter-spacing: 0;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--belt); outline-offset: 2px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 13px; }
+.legend b { font-family: var(--f-display); font-size: 15px; }
+
+/* Seções */
+section.blk { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.blk > header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.blk h2 { font-family: var(--f-display); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 21px; margin: 0; }
+.blk .sub { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.item { padding: 12px 16px; display: grid; gap: 8px; }
+.item + .item { border-top: 1px dashed var(--line); }
+.item-h { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.item-h h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.item-h .req { font-size: 12px; color: var(--muted); }
+.slot { display: grid; grid-template-columns: 22px 1fr auto; gap: 8px; align-items: center; }
+.slot.solo { grid-template-columns: 1fr auto; }
+.slot .n { font-family: var(--f-display); font-weight: 700; color: var(--muted); font-size: 16px; text-align: center; }
+.slot .names { display: flex; gap: 6px; min-width: 0; }
+.slot .names select { flex: 0 0 auto; width: auto; max-width: 46%; }
+.slot .lbl { font-size: 15px; }
+
+.marks { display: flex; gap: 4px; }
+.marks button {
+  font-family: var(--f-display); font-weight: 700; font-size: 18px; width: 42px; height: 40px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; padding: 0;
+}
+.marks button:hover { border-color: var(--fg); }
+.marks button[aria-pressed=true][data-v="1"] { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.marks button[aria-pressed=true][data-v="0.5"] { background: var(--half); border-color: var(--half); color: var(--surface); }
+.marks button[aria-pressed=true][data-v="0"] { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+@media (max-width: 420px) { .marks button { width: 38px; } }
+
+textarea { min-height: 90px; resize: vertical; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { font-family: var(--f-display); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 15px; padding: 11px 16px; border-radius: 8px; border: 1px solid var(--belt); background: var(--belt); color: var(--belt-ink); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.btn.danger { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.confirm { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+.toast { color: var(--ok); font-size: 14px; font-weight: 600; }
+#copyArea { width: 100%; min-height: 140px; font-size: 13px; }
+.foot { color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="belt">
+  <div class="wrap">
+    <span class="eyebrow">Simple Escola de Artes Marciais · Novembro 2026</span>
+    <h1>Exame de Faixa Azul</h1>
+  </div>
+</div>
+<div class="belt-bar" aria-hidden="true"></div>
+
+<div class="score" role="status" aria-live="polite">
+  <div class="wrap">
+    <div class="pct" id="pct">0%</div>
+    <div class="meter">
+      <div class="track"><div class="fill" id="fill"></div><div class="cut" title="Corte de 80%"></div></div>
+      <small id="meterTxt">0 de 58 pontos · 58 itens pendentes</small>
+    </div>
+    <span class="pill" id="status">Em andamento</span>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="ficha">
+    <label class="f full">Aluno<input type="text" id="aluno" placeholder="Nome do aluno"></label>
+    <label class="f">Parceiro (boneco)<input type="text" id="parceiro" placeholder="Nome"></label>
+    <label class="f">Data<input type="date" id="data"></label>
+  </div>
+
+  <div class="legend">
+    <span><b style="color:var(--ok)">✓</b> correto = 1 pt</span>
+    <span><b style="color:var(--half)">½</b> com ajustes = 0,5 pt</span>
+    <span><b style="color:var(--bad)">✗</b> não executou = 0 pt</span>
+    <span>Aprovação: 80% (46,4 de 58 pontos). Avalie a técnica, não a velocidade.</span>
+  </div>
+
+  <div id="sections"></div>
+
+  <section class="blk">
+    <header><h2>Observações</h2></header>
+    <div class="item">
+      <textarea id="obs" placeholder="Pontos fortes, o que precisa melhorar, comportamento no tatame…"></textarea>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="btn" id="copyBtn" type="button">Copiar resultado</button>
+    <button class="btn ghost" id="newBtn" type="button">Novo exame</button>
+    <span class="confirm" id="confirmBox" hidden>
+      Apagar este exame?
+      <button class="btn danger" id="confirmYes" type="button">Apagar</button>
+      <button class="btn ghost" id="confirmNo" type="button">Cancelar</button>
+    </span>
+    <span class="toast" id="toast" hidden></span>
+  </div>
+  <textarea id="copyArea" readonly hidden></textarea>
+
+  <p class="foot">O exame fica salvo neste navegador enquanto você avalia. Valor: R$ 350,00 com faixa inclusa.</p>
+</main>
+
+<script>
+const GUARDAS = ["Fechada", "Meia guarda", "Aranha", "De La Riva", "Gancho", "Laço"];
+const SECTIONS = [
+  { id: "regras", title: "Regras e pontuação", items: [
+    { id: "regras", label: "Conhece as regras e a pontuação", count: 1 } ] },
+  { id: "fund", title: "Fundamentos", items: [
+    { id: "rol-f", label: "Rolamento de frente", count: 1 },
+    { id: "rol-c", label: "Rolamento de costas", count: 1 },
+    { id: "rol-l", label: "Rolamento lateral", count: 1 },
+    { id: "queda-lev", label: "Queda com levantada técnica", count: 1 },
+    { id: "fuga-d", label: "Fuga de quadril deitado", count: 1 },
+    { id: "fuga-s", label: "Fuga de quadril sentado", count: 1 },
+    { id: "sprawl", label: "Sprawl", count: 1 } ] },
+  { id: "dp", title: "Defesa pessoal", items: [
+    { id: "dp-soco", label: "Defesas de soco", count: 2, named: true },
+    { id: "dp-chute", label: "Defesas de chute", count: 2, named: true },
+    { id: "dp-grav", label: "Defesas de gravata", count: 2, named: true } ] },
+  { id: "pe", title: "Em pé", items: [
+    { id: "quedas", label: "Quedas", count: 4, named: true, req: "nome obrigatório" },
+    { id: "puxada", label: "Puxada para guarda fechada", count: 1 },
+    { id: "pulo", label: "Pulo na guarda fechada", count: 1 } ] },
+  { id: "pass", title: "Passagens e guarda", items: [
+    { id: "pass-g", label: "Passagens de guarda (situações diferentes)", count: 5, named: true },
+    { id: "dom-mg", label: "Domínio de meia guarda", count: 1 },
+    { id: "pass-mg", label: "Passagens de meia guarda", count: 3, named: true },
+    { id: "abert", label: "Aberturas de guarda fechada", count: 2, named: true },
+    { id: "rasp", label: "Raspagens", count: 3, named: true, guard: true, req: "escolher entre as guardas" } ] },
+  { id: "def", title: "Defesas de posição", items: [
+    { id: "def-mont", label: "Defesas da montada", count: 2, named: true },
+    { id: "def-cost", label: "Defesas das costas", count: 2, named: true },
+    { id: "def-4", label: "Defesa de 4 apoios", count: 1, named: true },
+    { id: "def-100", label: "Defesas do 100 kg", count: 2, named: true } ] },
+  { id: "fin", title: "Finalizações", items: [
+    { id: "fin-mont", label: "Da montada", count: 4, named: true },
+    { id: "fin-100", label: "Do 100 kg", count: 3, named: true },
+    { id: "fin-cost", label: "Das costas", count: 3, named: true },
+    { id: "fin-guarda", label: "Da guarda", count: 4, named: true },
+    { id: "fin-jnb", label: "Do joelho na barriga", count: 3, named: true } ] },
+];
+const SLOTS = SECTIONS.flatMap(s => s.items.flatMap(it => Array.from({ length: it.count }, (_, i) => ({ sec: s.id, key: it.id + "-" + (i + 1) }))));
+const TOTAL = SLOTS.length;
+const CUT = TOTAL * 0.8;
+const KEY = "exame-faixa-azul-v1";
+
+let state = load();
+function blank() { return { aluno: "", parceiro: "", data: new Date().toISOString().slice(0, 10), obs: "", marks: {}, names: {}, guards: {} }; }
+function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.marks) return s; } catch (e) {} return blank(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function marksHtml(key) {
+  return `<div class="marks" role="group" aria-label="Nota">` +
+    [["1", "✓", "Correto"], ["0.5", "½", "Com ajustes"], ["0", "✗", "Não executou"]].map(([v, t, a]) =>
+      `<button type="button" data-key="${key}" data-v="${v}" aria-label="${a}" aria-pressed="false">${t}</button>`).join("") + `</div>`;
+}
+function render() {
+  document.getElementById("sections").innerHTML = SECTIONS.map(s => `
+    <section class="blk" data-sec="${s.id}">
+      <header><h2>${s.title}</h2><span class="sub" data-sub="${s.id}"></span></header>
+      ${s.items.map(it => {
+        if (!it.named) return `<div class="item"><div class="slot solo"><span class="lbl">${it.label}</span>${marksHtml(it.id + "-1")}</div></div>`;
+        const rows = Array.from({ length: it.count }, (_, i) => {
+          const key = it.id + "-" + (i + 1);
+          const sel = it.guard ? `<select id="g-${key}" data-guard="${key}" aria-label="Guarda"><option value="">Guarda…</option>${GUARDAS.map(g => `<option>${g}</option>`).join("")}</select>` : "";
+          return `<div class="slot"><span class="n">${i + 1}</span><div class="names">${sel}<input type="text" id="n-${key}" data-name="${key}" placeholder="Nome da técnica" aria-label="${esc(it.label)} ${i + 1}: nome da técnica"></div>${marksHtml(key)}</div>`;
+        }).join("");
+        return `<div class="item"><div class="item-h"><h3>${it.label}</h3><span class="req">${it.count}${it.req ? " · " + it.req : ""}</span></div>${rows}</div>`;
+      }).join("")}
+    </section>`).join("");
+  hydrate();
+}
+function hydrate() {
+  ["aluno", "parceiro", "data", "obs"].forEach(id => document.getElementById(id).value = state[id] || "");
+  document.querySelectorAll("[data-name]").forEach(el => el.value = state.names[el.dataset.name] || "");
+  document.querySelectorAll("[data-guard]").forEach(el => el.value = state.guards[el.dataset.guard] || "");
+  update();
+}
+const fmt = n => (Math.round(n * 10) / 10).toLocaleString("pt-BR");
+function update() {
+  document.querySelectorAll(".marks button").forEach(b => b.setAttribute("aria-pressed", String(state.marks[b.dataset.key] === Number(b.dataset.v))));
+  let pts = 0, done = 0;
+  const per = {};
+  SLOTS.forEach(s => {
+    per[s.sec] = per[s.sec] || { pts: 0, done: 0, n: 0 };
+    per[s.sec].n++;
+    const v = state.marks[s.key];
+    if (v !== undefined) { pts += v; done++; per[s.sec].pts += v; per[s.sec].done++; }
+  });
+  const pend = TOTAL - done;
+  const pct = pts / TOTAL * 100;
+  document.getElementById("pct").textContent = Math.floor(pct) + "%";
+  document.getElementById("fill").style.width = pct + "%";
+  document.getElementById("meterTxt").textContent = `${fmt(pts)} de ${TOTAL} pontos · ${pend ? pend + (pend === 1 ? " item pendente" : " itens pendentes") : "todos avaliados"}`;
+  const st = document.getElementById("status");
+  if (pts >= CUT) { st.textContent = "Aprovado"; st.className = "pill ok"; }
+  else if (pts + pend < CUT) { st.textContent = "Reprovado"; st.className = "pill bad"; }
+  else { st.textContent = "Em andamento"; st.className = "pill"; }
+  Object.entries(per).forEach(([k, p]) => {
+    const el = document.querySelector(`[data-sub="${k}"]`);
+    if (el) el.textContent = `${fmt(p.pts)} / ${p.n} pts${p.done < p.n ? " · " + (p.n - p.done) + " pend." : ""}`;
+  });
+  save();
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest(".marks button");
+  if (!b) return;
+  const v = Number(b.dataset.v);
+  if (state.marks[b.dataset.key] === v) delete state.marks[b.dataset.key]; else state.marks[b.dataset.key] = v;
+  update();
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.name) state.names[t.dataset.name] = t.value;
+  else if (t.dataset.guard) state.guards[t.dataset.guard] = t.value;
+  else if (["aluno", "parceiro", "data", "obs"].includes(t.id)) state[t.id] = t.value;
+  else return;
+  save();
+});
+document.addEventListener("change", e => { if (e.target.dataset.guard) { state.guards[e.target.dataset.guard] = e.target.value; save(); } });
+
+const confirmBox = document.getElementById("confirmBox");
+document.getElementById("newBtn").onclick = () => { confirmBox.hidden = false; };
+document.getElementById("confirmNo").onclick = () => { confirmBox.hidden = true; };
+document.getElementById("confirmYes").onclick = () => {
+  state = blank(); confirmBox.hidden = true; document.getElementById("copyArea").hidden = true; hydrate(); window.scrollTo(0, 0);
+};
+
+function summary() {
+  const sym = v => v === 1 ? "✓" : v === 0.5 ? "½" : v === 0 ? "✗" : "–";
+  let pts = 0; SLOTS.forEach(s => { if (state.marks[s.key] !== undefined) pts += state.marks[s.key]; });
+  const lines = [`EXAME FAIXA AZUL · Simple Escola de Artes Marciais`, `Aluno: ${state.aluno || "-"}`, `Parceiro: ${state.parceiro || "-"}`, `Data: ${state.data ? state.data.split("-").reverse().join("/") : "-"}`,
+    `Resultado: ${fmt(pts)}/${TOTAL} pts (${Math.floor(pts / TOTAL * 100)}%) · ${document.getElementById("status").textContent}`, ""];
+  SECTIONS.forEach(s => {
+    lines.push(s.title.toUpperCase());
+    s.items.forEach(it => {
+      for (let i = 1; i <= it.count; i++) {
+        const k = it.id + "-" + i;
+        const nm = [state.guards[k], state.names[k]].filter(Boolean).join(" – ");
+        lines.push(`  ${sym(state.marks[k])} ${it.label}${it.count > 1 ? " " + i : ""}${nm ? ": " + nm : ""}`);
+      }
+    });
+    lines.push("");
+  });
+  if (state.obs) lines.push("Observações: " + state.obs);
+  return lines.join("\n");
+}
+const toast = document.getElementById("toast");
+document.getElementById("copyBtn").onclick = () => {
+  const txt = summary();
+  const area = document.getElementById("copyArea");
+  const fallback = () => { area.value = txt; area.hidden = false; area.focus(); area.select(); toast.textContent = "Selecione e copie o texto abaixo"; toast.hidden = false; };
+  try {
+    navigator.clipboard.writeText(txt).then(() => { toast.textContent = "Resultado copiado"; toast.hidden = false; setTimeout(() => toast.hidden = true, 2500); }, fallback);
+  } catch (e) { fallback(); }
+};
+
+render();
+</script>
+</body>
+</html>
